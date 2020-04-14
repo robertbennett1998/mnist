@@ -89,7 +89,7 @@ results = None
 def run():
     global best_result
     global results
-    strategy = hpo.strategies.genetic_algorithm.GeneticAlgorithm(population_size=10, max_iterations=2, chromosome_type=construct_chromosome)
+    strategy = hpo.strategies.genetic_algorithm.GeneticAlgorithm(population_size=30, max_iterations=30, chromosome_type=construct_chromosome)
     strategy.mutation_strategy().mutation_probability(0.15)
     strategy.survivour_selection_strategy().threshold(0.7)
 

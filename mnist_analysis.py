@@ -11,7 +11,7 @@ def add_result_to_graph(result):
     pass
 
 
-results = hpo_results.Results.load(os.path.join(os.getcwd(), "results.res"))
+results = hpo_results.Results.load(os.path.join(os.getcwd(), ".tmp/hpo.results.tmp")) #results.res"))
 results.plot_average_score_over_optimisation_period()
 results.plot_average_loss_over_optimisation_period()
 
