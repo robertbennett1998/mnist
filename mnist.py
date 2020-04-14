@@ -15,7 +15,9 @@ ray.init()
 model_layers = [
     hpo.Layer(layer_name="input_layer_flatten", layer_type=tf.keras.layers.Flatten,
         hyperparameters=[],
-        parameters=[]),
+        parameters=[
+            hpo.Parameter(parameter_name="input_shape", parameter_value=(28, 28, 1))
+        ]),
 
     hpo.Layer(layer_name="hidden_layer_1_dense", layer_type=tf.keras.layers.Dense,
         hyperparameters=[
@@ -50,6 +52,10 @@ count = 0
 def add_result_to_graph(result):
     global total
     global count
+
+    if result.score() is None:
+        return
+
     raw_scores.append(result.score())
     total += result.score()
     count += 1
@@ -83,7 +89,7 @@ results = None
 def run():
     global best_result
     global results
-    strategy = hpo.strategies.genetic_algorithm.GeneticAlgorithm(population_size=30, max_iterations=30, chromosome_type=construct_chromosome)
+    strategy = hpo.strategies.genetic_algorithm.GeneticAlgorithm(population_size=1, max_iterations=1, chromosome_type=construct_chromosome)
     strategy.mutation_strategy().mutation_probability(0.15)
     strategy.survivour_selection_strategy().threshold(0.7)
 
@@ -100,4 +106,5 @@ hpo_thread.join()
 
 best_result.plot_train_val_accuracy()
 best_result.plot_train_val_loss()
+print(best_result.final_weights())
 results.save(os.path.join(os.getcwd(), "results.res"))
