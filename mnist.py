@@ -42,33 +42,6 @@ model_layers = [
             hpo.Parameter(parameter_name="units", parameter_value=10),
         ])]
 
-fig, (raw_scores_axis, average_score_axis) = plt.subplots(1, 2)
-raw_scores = list()
-average_scores = list()
-total = 0
-count = 0
-def add_result_to_graph(result):
-    global total
-    global count
-    raw_scores.append(result.score())
-    total += result.score()
-    count += 1
-    average_scores.append(total / count)
-
-def update_graph(i):
-    raw_scores_axis.clear()
-    raw_scores_axis.set_title("Score for each result.")
-    raw_scores_axis.plot(raw_scores)
-    average_score_axis.clear()
-    average_score_axis.set_title("Average score over optimisation period.")
-    average_score_axis.plot(average_scores)
-
-optimiser = hpo.Optimiser(optimiser_name="optimiser_adam", optimiser_type=tf.keras.optimizers.Adam, hyperparameters=[
-    hpo.Parameter(parameter_name="learning_rate", parameter_value=0.001,
-                  value_range=[1 * (10 ** n) for n in range(0, -7, -1)])
-])
-
-model_configuration = hpo.ModelConfiguration(optimiser=optimiser, layers=model_layers, loss_function="categorical_crossentropy", number_of_epochs=10)
 
 def construct_mnist_data():
     return MnistData(os.path.join(os.getcwd(), ".cache"), training_batch_size=1000, validation_batch_size=1000)
@@ -77,27 +50,19 @@ def construct_mnist_data():
 def construct_chromosome():
     return hpo.strategies.genetic_algorithm.DefaultChromosome(model_configuration)
 
-best_result = None
-results = None
 
-def run():
-    global best_result
-    global results
-    strategy = hpo.strategies.genetic_algorithm.GeneticAlgorithm(population_size=30, max_iterations=30, chromosome_type=construct_chromosome)
-    strategy.mutation_strategy().mutation_probability(0.15)
-    strategy.survivour_selection_strategy().threshold(0.7)
+optimiser = hpo.Optimiser(optimiser_name="optimiser_adam", optimiser_type=tf.keras.optimizers.Adam, hyperparameters=[
+    hpo.Parameter(parameter_name="learning_rate", parameter_value=0.001,
+                  value_range=[1 * (10 ** n) for n in range(0, -7, -1)])
+])
 
-    hpo_instance = hpo.Hpo(model_configuration, construct_mnist_data, strategy)
-    best_result, results = hpo_instance.execute(result_added_hook=add_result_to_graph)
+model_configuration = hpo.ModelConfiguration(optimiser=optimiser, layers=model_layers, loss_function="categorical_crossentropy", number_of_epochs=10)
 
-hpo_thread = threading.Thread(target=run)
-hpo_thread.start()
+strategy = hpo.strategies.genetic_algorithm.GeneticAlgorithm(population_size=30, max_iterations=30, chromosome_type=construct_chromosome)
+strategy.mutation_strategy().mutation_probability(0.15)
+strategy.survivour_selection_strategy().threshold(0.7)
 
-ani = animation.FuncAnimation(fig, update_graph, interval=1000)
-plt.show()
+hpo_instance = hpo.Hpo(model_configuration, construct_mnist_data, strategy)
+best_result, results = hpo_instance.execute()
 
-hpo_thread.join()
-
-best_result.plot_train_val_accuracy()
-best_result.plot_train_val_loss()
 results.save(os.path.join(os.getcwd(), "results.res"))
