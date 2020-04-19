@@ -1,11 +1,7 @@
-from mnist_data import MnistData
 import os
-import hpo
-import hpo.strategies.bayesian_method
 import ray
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import mnist_models
 import threading
 
 ray.init()

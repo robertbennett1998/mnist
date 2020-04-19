@@ -2,6 +2,7 @@ from mnist_data import MnistData
 import os
 import hpo.strategies.bayesian_method
 import hpo.strategies.genetic_algorithm
+import hpo.strategies.random_search
 import mnist_models
 import hpo_experiment_runner
 
@@ -18,6 +19,14 @@ def construct_chromosome():
 
 
 #####################################
+# Random Search
+#####################################
+strategy = hpo.strategies.random_search.RandomSearch(model_configuration, 900)
+hpo_instance = hpo.Hpo(model_configuration, construct_mnist_data, strategy)
+
+hpo_experiment_runner.run_with_live_graphs(hpo_instance, os.path.join(os.getcwd(), "hpo_random_search.results"))
+
+#####################################
 # Bayesian Selection - Random Forest
 #####################################
 strategy = hpo.strategies.bayesian_method.BayesianMethod(model_configuration, 200, hpo.strategies.bayesian_method.RandomForestSurrogate())
@@ -31,7 +40,7 @@ hpo_experiment_runner.run(hpo_instance, os.path.join(os.getcwd(), "hpo_bayesian_
 strategy = hpo.strategies.bayesian_method.BayesianMethod(model_configuration, 900, hpo.strategies.bayesian_method.GaussianProcessSurrogate())
 hpo_instance = hpo.Hpo(model_configuration, construct_mnist_data, strategy)
 
-hpo_experiment_runner.run(hpo_instance, os.path.join(os.getcwd(), "hpo_bayesian_gaussian_process.results"))
+hpo_experiment_runner.run_with_live_graphs(hpo_instance, os.path.join(os.getcwd(), "hpo_bayesian_gaussian_process.results"))
 
 #########################################
 # Genetic Algorithm - Roulette Selection

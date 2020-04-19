@@ -114,3 +114,4 @@ venv.bak/
 # data directories
 **/data/
 **/build/
+**/.tmp/
