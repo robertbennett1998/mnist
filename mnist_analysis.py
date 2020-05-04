@@ -1,33 +1,22 @@
-import json
+from hpo import Results, Result
 import os
+from pathlib import Path
 import matplotlib.pyplot as plt
-from hpo import *
-import ray
 
-from mnist_data import MnistData
+all_results = dict()
+result_file_paths = Path.glob(Path(os.getcwd()), "*.results")
+for result_file_path in result_file_paths:
+    key = result_file_path.stem.replace('_', ' ').replace("_hpo", "")
+    print(key)
+    all_results[key] = Results.load(result_file_path)
 
+legend = list()
+plt.subplots(1)
 
-def add_result_to_graph(result):
-    pass
+for key, results in all_results.items():
+    ys = [result.score() for result in results.history()]
+    print(key, results.best_result().score(), results.best_result().meta_data(), sum(ys) / len(ys))
+    plt.plot(ys)
+    plt.title(key + " loss")
+    #plt.show()
 
-
-results = hpo_results.Results.load(os.path.join(os.getcwd(), ".tmp/hpo.results.tmp")) #results.res"))
-results.plot_average_score_over_optimisation_period()
-results.plot_average_loss_over_optimisation_period()
-
-best_result = results.best_result()
-best_result.plot_train_val_accuracy()
-best_result.plot_train_val_loss()
-print("Best Model Information:")
-print("\t Fitness: ", best_result.score())
-print("\t Generation Number: ", best_result.meta_data()["Generation"])
-print("\t Chromosome Number: ", best_result.meta_data()["Chromosome"])
-print("\n\t", "Model Parameters:")
-for hp in best_result.model_configuration().all_parameters():
-    print("\t\t", hp.identifier(), "=", hp.value())
-
-model = hpo_model.Model.from_model_configuration(best_result.model_configuration(), best_result.final_weights())
-def construct_mnist_data():
-    return MnistData(os.path.join(os.getcwd(), ".cache"), training_batch_size=1000, validation_batch_size=1000)
-
-model.train(construct_mnist_data)
