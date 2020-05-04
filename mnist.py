@@ -17,15 +17,6 @@ def construct_mnist_data():
 def construct_chromosome(remote_model_type):
     return hpo.strategies.genetic_algorithm.DefaultChromosome(model_configuration, remote_model_type)
 
-
-model_configuration.print_hyperparameter_summary()
-
-model = hpo.TensorFlowModel.from_model_configuration(model_configuration)
-
-model.print_summary()
-
-exit()
-
 prefix = "single_dense_layer_"
 
 #####################################
